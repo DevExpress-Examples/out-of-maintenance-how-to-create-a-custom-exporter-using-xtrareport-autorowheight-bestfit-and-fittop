@@ -43,7 +43,7 @@ Public NotInheritable Class PivotReportGenerator
             Dim pcea As DevExpress.XtraPivotGrid.Data.PivotGridCellItem = GetCellItem(pivot, 0, i)
             If pcea.RowValueType = PivotGridValueType.Value Then
                 For Each item As PivotGridFieldBase In fieldsInRowArea
-                    tempRowText &= pcea.GetFieldValue(GetFieldItemByField(pivot, item)).ToString() & " | " 'add formatting if it's necessary
+                    tempRowText &= pcea.GetFieldValue(item).ToString() & " | " 'add formatting if it's necessary
                 Next item
                 tempRowText = tempRowText.Remove(tempRowText.Length - 3, 3)
             Else
@@ -63,12 +63,6 @@ Public NotInheritable Class PivotReportGenerator
             dataTable1.Rows.Add(rowvalues.ToArray())
         Next i
     End Sub
-
-    Private Shared Function GetFieldItemByField(ByVal pivot As ASPxPivotGrid, ByVal field As PivotGridFieldBase) As DevExpress.XtraPivotGrid.Data.PivotFieldItemBase
-        Return pivot.Data.GetFieldItem(field)
-    End Function
-
-
 
     Private Shared Function GetCellItem(ByVal pivot As ASPxPivotGrid, ByVal columnIndex As Integer, ByVal rowIndex As Integer) As DevExpress.XtraPivotGrid.Data.PivotGridCellItem
         Dim columnItem As DevExpress.XtraPivotGrid.Data.PivotFieldValueItem = pivot.Data.VisualItems.GetLastLevelItem(True, columnIndex, False)

@@ -45,7 +45,7 @@ public static class PivotReportGenerator
             if ( pcea.RowValueType == PivotGridValueType.Value) 
             {
                 foreach (PivotGridFieldBase item in fieldsInRowArea)
-                    tempRowText += pcea.GetFieldValue(GetFieldItemByField(pivot, item)).ToString() + " | "; //add formatting if it's necessary
+                    tempRowText += pcea.GetFieldValue(item).ToString() + " | "; //add formatting if it's necessary
                 tempRowText = tempRowText.Remove(tempRowText.Length - 3, 3);
             }
             else
@@ -64,13 +64,6 @@ public static class PivotReportGenerator
             dataTable1.Rows.Add(rowvalues.ToArray());
         }
     }
-
-    private static DevExpress.XtraPivotGrid.Data.PivotFieldItemBase GetFieldItemByField(ASPxPivotGrid pivot, PivotGridFieldBase field)
-    {
-        return pivot.Data.GetFieldItem(field);
-    }
-
-
 
     private static DevExpress.XtraPivotGrid.Data.PivotGridCellItem GetCellItem(ASPxPivotGrid pivot, int columnIndex, int rowIndex)
     {
