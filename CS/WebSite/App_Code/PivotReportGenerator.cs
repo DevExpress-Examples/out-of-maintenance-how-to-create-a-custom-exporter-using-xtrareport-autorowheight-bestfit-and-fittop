@@ -8,21 +8,20 @@ using DevExpress.XtraPivotGrid;
 using DevExpress.XtraEditors;
 using DevExpress.Web.ASPxPivotGrid;
 using System.Text;
+using DevExpress.Drawing;
+using DevExpress.XtraPrinting;
 
-public static class PivotReportGenerator
-{
-    public static XtraReport GenerateReport(ASPxPivotGrid pivot,ReportGeneratorType kind,int columnWidth,bool repeatRowHeader)
-    {
-            XtraReport rep = new XtraReport();
-            rep.DataSource = FillDataset(pivot);
-            rep.DataMember = ((DataSet)rep.DataSource).Tables[0].TableName;
-            InitBands(rep);
-            InitStyles(rep);
-            InitDetailsBasedonXRTable(rep, kind, columnWidth, repeatRowHeader);
-            return rep;
+public static class PivotReportGenerator {
+    public static XtraReport GenerateReport(ASPxPivotGrid pivot, ReportGeneratorType kind, int columnWidth, bool repeatRowHeader) {
+        XtraReport rep = new XtraReport();
+        rep.DataSource = FillDataset(pivot);
+        rep.DataMember = ((DataSet)rep.DataSource).Tables[0].TableName;
+        InitBands(rep);
+        InitStyles(rep);
+        InitDetailsBasedonXRTable(rep, kind, columnWidth, repeatRowHeader);
+        return rep;
     }
-    public static DataSet FillDataset(ASPxPivotGrid pivot)
-    {
+    public static DataSet FillDataset(ASPxPivotGrid pivot) {
         DataSet dataSet1 = new DataSet();
         dataSet1.DataSetName = "PivotGridColumns";
         DataTable dataTable1 = new DataTable();
@@ -33,17 +32,14 @@ public static class PivotReportGenerator
         return dataSet1;
     }
     #region PreparingDataSet
-    private static void FillDatasetExtracted(ASPxPivotGrid pivot, DataTable dataTable1)
-    {       
+    private static void FillDatasetExtracted(ASPxPivotGrid pivot, DataTable dataTable1) {
 
         List<object> rowvalues = new List<object>();
         string tempRowText = "";
         List<PivotGridFieldBase> fieldsInRowArea = GetFieldsInArea(pivot, PivotArea.RowArea);
-        for (int i = 0; i < pivot.RowCount; i++)
-        {
-            DevExpress.XtraPivotGrid.Data.PivotGridCellItem pcea = GetCellItem(pivot, 0, i); 
-            if ( pcea.RowValueType == PivotGridValueType.Value) 
-            {
+        for (int i = 0; i < pivot.RowCount; i++) {
+            DevExpress.XtraPivotGrid.Data.PivotGridCellItem pcea = GetCellItem(pivot, 0, i);
+            if (pcea.RowValueType == PivotGridValueType.Value) {
                 foreach (PivotGridFieldBase item in fieldsInRowArea)
                     tempRowText += pcea.GetFieldValue(item).ToString() + " | "; //add formatting if it's necessary
                 tempRowText = tempRowText.Remove(tempRowText.Length - 3, 3);
@@ -53,8 +49,7 @@ public static class PivotReportGenerator
             rowvalues.Clear();
             rowvalues.Add(tempRowText);
             tempRowText = "";
-            for (int j = 0; j < pivot.ColumnCount; j++)
-            {
+            for (int j = 0; j < pivot.ColumnCount; j++) {
                 pcea = GetCellItem(pivot, j, i);
                 if (pcea.Value != null)
                     rowvalues.Add(pcea.Value);
@@ -65,19 +60,16 @@ public static class PivotReportGenerator
         }
     }
 
-    private static DevExpress.XtraPivotGrid.Data.PivotGridCellItem GetCellItem(ASPxPivotGrid pivot, int columnIndex, int rowIndex)
-    {
+    private static DevExpress.XtraPivotGrid.Data.PivotGridCellItem GetCellItem(ASPxPivotGrid pivot, int columnIndex, int rowIndex) {
         DevExpress.XtraPivotGrid.Data.PivotFieldValueItem columnItem = pivot.Data.VisualItems.GetLastLevelItem(true, columnIndex, false);
         DevExpress.XtraPivotGrid.Data.PivotFieldValueItem rowItem = pivot.Data.VisualItems.GetLastLevelItem(false, rowIndex, false);
-        return  pivot.Data.VisualItems.CreateCellItem(columnItem, rowItem, columnIndex, rowIndex);
+        return pivot.Data.VisualItems.CreateCellItem(columnItem, rowItem, columnIndex, rowIndex);
     }
-    private static void FillDatasetColumns(ASPxPivotGrid pivot, DataTable dataTable1)
-    {
+    private static void FillDatasetColumns(ASPxPivotGrid pivot, DataTable dataTable1) {
         dataTable1.Columns.Add("RowFields", typeof(string));
         StringBuilder sb = new StringBuilder();
         bool multipleDataField = pivot.GetFieldsByArea(PivotArea.DataArea).Count > 1;
-        for (int i = 0; i < pivot.ColumnCount; i++)
-        {
+        for (int i = 0; i < pivot.ColumnCount; i++) {
             DevExpress.Web.ASPxPivotGrid.PivotCellBaseEventArgs pcea = pivot.GetCellInfo(i, 0);
             foreach (DevExpress.Web.ASPxPivotGrid.PivotGridField field in pcea.GetColumnFields())
                 sb.AppendFormat("{0} | ", field.GetDisplayText(pcea.GetFieldValue(field)));//add formatting if it's necessary
@@ -91,8 +83,7 @@ public static class PivotReportGenerator
             sb.Clear();
         }
     }
-    private static List<PivotGridFieldBase> GetFieldsInArea(ASPxPivotGrid pivot, PivotArea area)
-    {
+    private static List<PivotGridFieldBase> GetFieldsInArea(ASPxPivotGrid pivot, PivotArea area) {
         List<PivotGridFieldBase> fields = new List<PivotGridFieldBase>();
         for (int i = 0; i < pivot.Fields.Count; i++)
             if (pivot.Fields[i].Area == area)
@@ -100,8 +91,7 @@ public static class PivotReportGenerator
         return fields;
     }
     #endregion
-    public static void InitBands(XtraReport rep)
-    {
+    public static void InitBands(XtraReport rep) {
         // Create bands
         DetailBand detail = new DetailBand();
         PageHeaderBand pageHeader = new PageHeaderBand();
@@ -111,49 +101,46 @@ public static class PivotReportGenerator
         pageHeader.Height = 20;
 
         // Place the bands onto a report
-        rep.Bands.AddRange(new DevExpress.XtraReports.UI.Band[] { detail, pageHeader, reportFooter });
+        rep.Bands.AddRange(new Band[] { detail, pageHeader, reportFooter });
     }
-    public static void InitStyles(XtraReport rep)
-    {
+    public static void InitStyles(XtraReport rep) {
         // Create different odd and even styles
         XRControlStyle oddStyle = new XRControlStyle();
         XRControlStyle evenStyle = new XRControlStyle();
 
         // Specify the odd style appearance
-        oddStyle.BackColor = Color.LightBlue;
+        oddStyle.BackColor = System.Drawing.Color.LightBlue;
         oddStyle.StyleUsing.UseBackColor = true;
         oddStyle.StyleUsing.UseBorders = false;
         oddStyle.Name = "OddStyle";
 
         // Specify the even style appearance
-        evenStyle.BackColor = Color.LightPink;
+        evenStyle.BackColor = System.Drawing.Color.LightPink;
         evenStyle.StyleUsing.UseBackColor = true;
         evenStyle.StyleUsing.UseBorders = false;
         evenStyle.Name = "EvenStyle";
 
         // Add styles to report's style sheet
-        rep.StyleSheet.AddRange(new DevExpress.XtraReports.UI.XRControlStyle[] { oddStyle, evenStyle });
+        rep.StyleSheet.AddRange(new XRControlStyle[] { oddStyle, evenStyle });
     }
-    public static void InitDetailsBasedonXRTable(XtraReport rep, ReportGeneratorType kind, int columnWidth, bool repeatRowHeader)
-    {
+    public static void InitDetailsBasedonXRTable(XtraReport rep, ReportGeneratorType kind, float columnWidth, bool repeatRowHeader) {
         if (!repeatRowHeader || kind == ReportGeneratorType.SinglePage)
             InitDetailsBasedonXRTableWithoutRepeatingRowHeader(rep, kind, columnWidth);
         else
             InitDetailsBasedonXRTableRepeatingRowHeader(rep, kind, columnWidth);
     }
 
-    private static void InitDetailsBasedonXRTableRepeatingRowHeader(XtraReport rep, ReportGeneratorType kind, int columnWidth)
-    {
-        Font font = new Font("Tahoma", 9.75f);
+    static void InitDetailsBasedonXRTableRepeatingRowHeader(XtraReport rep, ReportGeneratorType kind, float columnWidth) {
+        DXFont font = new DXFont("Tahoma", 9.75f);
         DataTable dataTable = ((DataSet)rep.DataSource).Tables[0];
         int processedPage = 0;
-        int usablePageWidth = rep.PageWidth - (rep.Margins.Left + rep.Margins.Right);
+        float usablePageWidth = rep.PageWidth - (rep.Margins.Left + rep.Margins.Right);
 
-        List<int> columnsWidth = null;
+        List<float> columnsWidth = null;
         if (kind == ReportGeneratorType.FixedColumnWidth)
             columnsWidth = DefineColumnsWidth(columnWidth, dataTable.Columns.Count);
         else
-            columnsWidth = GetColumnsBestFitWidth(dataTable, font);
+            columnsWidth = GetColumnsBestFitWidth(dataTable, font, rep.ReportUnit);
 
         XRTable tableHeader = null;
         XRTable tableDetail = null;
@@ -162,11 +149,9 @@ public static class PivotReportGenerator
         tableDetail.BeginInit();
         int i = 1;
         AddCellsToTables(tableHeader, tableDetail, dataTable.Columns[0], columnsWidth[0], true);
-        int remainingSpace = usablePageWidth - columnsWidth[0];
-        do
-        {
-            if (columnsWidth[i] > remainingSpace)
-            {
+        float remainingSpace = usablePageWidth - columnsWidth[0];
+        do {
+            if (columnsWidth[i] > remainingSpace) {
                 processedPage++;
                 tableHeader.WidthF = usablePageWidth - remainingSpace;
                 tableDetail.WidthF = usablePageWidth - remainingSpace;
@@ -178,8 +163,7 @@ public static class PivotReportGenerator
                 AddCellsToTables(tableHeader, tableDetail, dataTable.Columns[0], columnsWidth[0], true);
                 remainingSpace = usablePageWidth - columnsWidth[0];
             }
-            else
-            {
+            else {
                 AddCellsToTables(tableHeader, tableDetail, dataTable.Columns[i], columnsWidth[i], false);
                 remainingSpace -= columnsWidth[i];
                 i++;
@@ -191,21 +175,18 @@ public static class PivotReportGenerator
         tableHeader.EndInit();
         tableDetail.EndInit();
     }
-    public static void AddCellsToTables(XRTable header, XRTable detail, DataColumn dc, int columnWidth, bool isFirstColumnInTable)
-    {
+    public static void AddCellsToTables(XRTable header, XRTable detail, DataColumn dc, float columnWidth, bool isFirstColumnInTable) {
         XRTableCell headerCell = new XRTableCell();
         headerCell.Text = dc.Caption;
         XRTableCell detailCell = new XRTableCell();
         detailCell.DataBindings.Add("Text", null, dc.Caption);
-        headerCell.Width = columnWidth;
-        detailCell.Width = columnWidth;
-        if (isFirstColumnInTable)
-        {
+        headerCell.WidthF = columnWidth;
+        detailCell.WidthF = columnWidth;
+        if (isFirstColumnInTable) {
             headerCell.Borders = DevExpress.XtraPrinting.BorderSide.Left | DevExpress.XtraPrinting.BorderSide.Top | DevExpress.XtraPrinting.BorderSide.Bottom;
             detailCell.Borders = DevExpress.XtraPrinting.BorderSide.Left | DevExpress.XtraPrinting.BorderSide.Top | DevExpress.XtraPrinting.BorderSide.Bottom;
         }
-        else
-        {
+        else {
             headerCell.Borders = DevExpress.XtraPrinting.BorderSide.All;
             detailCell.Borders = DevExpress.XtraPrinting.BorderSide.All;
         }
@@ -213,8 +194,7 @@ public static class PivotReportGenerator
         header.Rows[0].Cells.Add(headerCell);
         detail.Rows[0].Cells.Add(detailCell);
     }
-    public static void InitNewTableInstancesAt(XtraReport report, Font font, out XRTable header, out XRTable detail, PointF location)
-    {
+    public static void InitNewTableInstancesAt(XtraReport report, DXFont font, out XRTable header, out XRTable detail, PointF location) {
         header = InitXRTable(font, false);
         detail = InitXRTable(font, true);
         header.LocationF = location;
@@ -226,32 +206,28 @@ public static class PivotReportGenerator
         report.Bands[BandKind.PageHeader].Controls.Add(header);
         report.Bands[BandKind.Detail].Controls.Add(detail);
     }
-    private static XRTable InitXRTable(Font font, bool withStyles)
-    {
+    static XRTable InitXRTable(DXFont font, bool withStyles) {
         XRTable table = new XRTable();
         table.Font = font;
         table.Height = 20;
-        if (withStyles)
-        {
+        if (withStyles) {
             table.EvenStyleName = "EvenStyle";
             table.OddStyleName = "OddStyle";
         }
         return table;
     }
 
-    private static List<int> DefineColumnsWidth(int columnWidth, int count)
-    {
-        List<int> columnsWidth = new List<int>();
+    static List<float> DefineColumnsWidth(float columnWidth, int count) {
+        List<float> columnsWidth = new List<float>();
         for (int i = 0; i < count; i++)
             columnsWidth.Add(columnWidth);
         return columnsWidth;
     }
-     static void InitDetailsBasedonXRTableWithoutRepeatingRowHeader(XtraReport rep, ReportGeneratorType kind, int columnWidth)
-    {
-        Font font = new Font("Tahoma", 9.75f);
+    static void InitDetailsBasedonXRTableWithoutRepeatingRowHeader(XtraReport rep, ReportGeneratorType kind, float columnWidth) {
+        DXFont font = new DXFont("Tahoma", 9.75f);
         DataSet ds = ((DataSet)rep.DataSource);
         int colCount = ds.Tables[0].Columns.Count;
-        int colWidth = 0;
+        float colWidth = 0;
 
 
 
@@ -260,32 +236,30 @@ public static class PivotReportGenerator
         InitNewTableInstancesAt(rep, font, out tableHeader, out tableDetail, new PointF(0, 0));
 
 
-        List<int> columnsWidth = null;
-        switch (kind)
-        {
+        List<float> columnsWidth = null;
+        switch (kind) {
             case ReportGeneratorType.FixedColumnWidth:
                 colWidth = columnWidth;
-                tableHeader.Width = columnWidth * colCount;
-                tableDetail.Width = columnWidth * colCount;
+                tableHeader.WidthF = columnWidth * colCount;
+                tableDetail.WidthF = columnWidth * colCount;
                 break;
             case ReportGeneratorType.BestFitColumns:
-                columnsWidth = GetColumnsBestFitWidth(ds.Tables[0], font);
+                columnsWidth = GetColumnsBestFitWidth(ds.Tables[0], font, rep.ReportUnit);
                 colWidth = 0;
-                tableHeader.Width = GetTotalWidth(columnsWidth);
-                tableDetail.Width = tableHeader.Width;
+                tableHeader.WidthF = GetTotalWidth(columnsWidth);
+                tableDetail.WidthF = tableHeader.Width;
                 break;
             default:
                 colWidth = (rep.PageWidth - (rep.Margins.Left + rep.Margins.Right)) / colCount;
-                tableHeader.Width = (rep.PageWidth - (rep.Margins.Left + rep.Margins.Right));
-                tableDetail.Width = (rep.PageWidth - (rep.Margins.Left + rep.Margins.Right));
+                tableHeader.WidthF = (rep.PageWidth - (rep.Margins.Left + rep.Margins.Right));
+                tableDetail.WidthF = (rep.PageWidth - (rep.Margins.Left + rep.Margins.Right));
                 break;
         }
 
         tableHeader.BeginInit();
         tableDetail.BeginInit();
         // Create table cells, fill the header cells with text, bind the cells to data
-        for (int i = 0; i < colCount; i++)
-        {
+        for (int i = 0; i < colCount; i++) {
             AddCellsToTables(tableHeader, tableDetail, ds.Tables[0].Columns[i], kind == ReportGeneratorType.BestFitColumns ? columnsWidth[i] : colWidth, i == 0 ? true : false);
         }
         tableDetail.EndInit();
@@ -294,36 +268,35 @@ public static class PivotReportGenerator
 
     }
 
-    private static int GetTotalWidth(List<int> columnsWidth)
-    {
-        int i = 0;
-        foreach (int colWidth in columnsWidth)
+    static float GetTotalWidth(List<float> columnsWidth) {
+        float i = 0;
+        foreach (float colWidth in columnsWidth)
             i += colWidth;
         return i;
     }
 
-    private static List<int> GetColumnsBestFitWidth(DataTable dataTable, Font font)
-    {
-        List<int> optimalColumnWidth = new List<int>();
+    static List<float> GetColumnsBestFitWidth(DataTable dataTable, DXFont font, ReportUnit unit) {
+        List<float> optimalColumnWidth = new List<float>();
         float maxWidth = 0;
         float tempWidth = 0;
-        for (int i = 1; i < dataTable.Rows.Count; i++)
-        {
-            tempWidth = TextRenderer.MeasureText(dataTable.Rows[i][0].ToString(), font).Width;
+        for (int i = 1; i < dataTable.Rows.Count; i++) {
+            tempWidth = MeasureWidth(dataTable.Rows[i][0].ToString(), font, unit);
             maxWidth = maxWidth > tempWidth ? maxWidth : tempWidth;
         }
-        optimalColumnWidth.Add(Convert.ToInt32(XRConvert.Convert(maxWidth, GraphicsUnit.Pixel, GraphicsUnit.Inch) * 100 + 1));
-        for (int i = 1; i < dataTable.Columns.Count; i++)
-        {
-            tempWidth = TextRenderer.MeasureText(dataTable.Columns[i].ColumnName.ToString(), font).Width;
+        optimalColumnWidth.Add(maxWidth);
+        for (int i = 1; i < dataTable.Columns.Count; i++) {
+            tempWidth = MeasureWidth(dataTable.Columns[i].ColumnName.ToString(), font, unit);
             maxWidth = 50 > tempWidth ? 50 : tempWidth;
-            optimalColumnWidth.Add(Convert.ToInt32(XRConvert.Convert(maxWidth, GraphicsUnit.Pixel, GraphicsUnit.Inch) * 100 + 1));
+            optimalColumnWidth.Add(maxWidth);
         }
         return optimalColumnWidth;
     }
+
+    static float MeasureWidth(string candidate, DXFont font, ReportUnit unit) {
+        return BestSizeEstimator.GetBoundsToFitText(candidate, new BrickStyle() { Font = font }, unit).Width;
+    }
 }
-public enum ReportGeneratorType
-{
+public enum ReportGeneratorType {
     SinglePage,
     FixedColumnWidth,
     BestFitColumns,

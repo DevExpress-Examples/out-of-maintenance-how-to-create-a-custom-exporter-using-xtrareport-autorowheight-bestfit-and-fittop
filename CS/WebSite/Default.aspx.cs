@@ -20,19 +20,15 @@ public partial class _Default : System.Web.UI.Page
 
     protected void Button1_Click(object sender, EventArgs e)
     {
-        try
-        {           
+           
             using (MemoryStream stream = new MemoryStream())
             {
                 XtraReport rep = PivotReportGenerator.GenerateReport(ASPxPivotGrid1, GetReportGeneratorType(RadioButtonList1.Value.ToString()), Convert.ToInt32(ASPxSpinEdit1.Number), ASPxCheckBox1.Checked);
                 rep.ExportToPdf(stream);
                 ExportToResponse(stream, "Book", "pdf", "application/pdf", true);
             }
-        }
-        catch (Exception ex)
-        {
-            Response.Redirect("Error.aspx");
-        }
+        
+  
     }
 
     private ReportGeneratorType GetReportGeneratorType(string value)
